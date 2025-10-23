@@ -1,8 +1,9 @@
+
 name: Quiet Link Validator
 
 on:
   schedule:
-    - cron: '05 13 * * *'   # 09:05 ET (13:05 UTC)
+    - cron: '05 13 * * *' # 09:05 ET (13:05 UTC)
   workflow_dispatch:
 
 jobs:
@@ -15,8 +16,27 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install deps
-        run: pip install -r requirements.txt
+      # Отладка: покажем текущую директорию и файлы
+      - name: Debug workspace
+        run: |
+          echo "PWD:"
+          pwd
+          echo "ROOT:"
+          ls -la
+          echo "--- .github/workflows ---"
+          ls -la .github/workflows || true
+          echo "--- scripts ---"
+          ls -la scripts || true
+
+      # Установка зависимостей: только если requirements.txt действительно есть
+      - name: Install deps (if requirements.txt exists)
+        run: |
+          if [ -f requirements.txt ]; then
+            python -m pip install --upgrade pip
+            python -m pip install -r requirements.txt
+          else
+            echo "requirements.txt not found, skipping pip install"
+          fi
 
       - name: Run validator
         env:
@@ -26,3 +46,4 @@ jobs:
           PROJECT_TRACKER_DB_ID: ${{ secrets.PROJECT_TRACKER_DB_ID }}
           AFF_TAG: abinom55-20
         run: python scripts/quiet_validator.py
+
