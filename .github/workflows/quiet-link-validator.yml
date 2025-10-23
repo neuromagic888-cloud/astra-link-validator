@@ -8,6 +8,7 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -15,26 +16,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      # Отладка: покажем текущую директорию и файлы
-      - name: Debug workspace
-        run: |
-          echo "PWD:"
-          pwd
-          echo "ROOT:"
-          ls -la
-          echo "--- .github/workflows ---"
-          ls -la .github/workflows || true
-          echo "--- scripts ---"
-          ls -la scripts || true
-
-      # Установка зависимостей: только если requirements.txt действительно есть
-      - name: Install deps (if requirements.txt exists)
+      - name: Install deps (robust)
         run: |
           if [ -f requirements.txt ]; then
             python -m pip install --upgrade pip
-            python -m pip install -r requirements.txt
+            pip install -r requirements.txt
           else
-            echo "requirements.txt not found, skipping pip install"
+            echo "⚠️ No requirements.txt found, skipping install."
           fi
 
       - name: Run validator
