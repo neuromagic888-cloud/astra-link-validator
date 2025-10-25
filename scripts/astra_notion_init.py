@@ -123,19 +123,6 @@ def create_page(database_id: str, properties: Dict[str, Dict], token: str, notio
     return resp.json()
 
 
-def ensure_select_options(property_def: Dict, options: List[str]) -> Dict:
-    # property_def is a select property schema
-    return {
-        "select": {
-            "options": [{"name": opt} for opt in options]
-        }
-    }
-
-
-def make_select_property(name: str, options: List[str]) -> Dict:
-    return {"name": name, "select": {"options": [{"name": o} for o in options]}}
-
-
 def main():
     parser = argparse.ArgumentParser(description="Astra Notion v1-lite initializer")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
@@ -205,9 +192,7 @@ def main():
             logger.info(f"✅ created DB: {LINKCHECKS_TITLE} ({link_id})")
 
         # Check for relation property to Chronicle, add if absent
-        link_db = requests.get(f"{API_BASE}/databases/{link_id}", headers={
-            "Authorization": f"Bearer {token}", "Notion-Version": notion_version
-        })
+        link_db = notion_request_with_backoff("GET", f"/databases/{link_id}", token, notion_version)
         link_db.raise_for_status()
         link_schema = link_db.json().get("properties", {})
         if "Chronicle" not in link_schema:
